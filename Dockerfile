@@ -16,5 +16,5 @@ COPY pyproject.toml ./
 COPY *.py ./
 
 RUN poetry install
-ENTRYPOINT ["poetry", "run", "kopf", "run", "--log-format=json", "--verbose"]
+ENTRYPOINT ["poetry", "run"]
 CMD ["/src/jobs.py"]
