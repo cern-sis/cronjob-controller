@@ -16,5 +16,5 @@ COPY pyproject.toml ./
 COPY *.py ./
 
 RUN poetry install
-ENTRYPOINT ["poetry", "run"]
+ENTRYPOINT ["poetry", "run", "python"]
 CMD ["/src/jobs.py"]
