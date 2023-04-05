@@ -1,6 +1,7 @@
 # this job should list the buckets contents and create 64 jobs each job backing up files
 import logging
 import os
+import time
 
 from kubernetes import client, config
 
@@ -11,4 +12,6 @@ api = client.BatchV1beta1Api()
 source_buckets = os.environ.get("BUCKET_LIST")
 bucket = source_buckets.split(",")
 logging.info(bucket)
+
+time.sleep(20)
 logging.info("job is created!!")
