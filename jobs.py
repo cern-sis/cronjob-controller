@@ -60,7 +60,7 @@ s3 = boto3.client(
     endpoint_url=os.environ["RCLONE_CONFIG_MEYRIN_ENDPOINT"],
 )
 
-paginator = s3.get_paginator("list_object_v2")
+paginator = s3.get_paginator("list_objects_v2")
 page_iterator = paginator.paginate(
     Bucket=test_bucket, PaginationConfig={"PageSize": 1000}
 )
