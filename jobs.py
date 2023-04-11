@@ -33,30 +33,30 @@ buckets = os.environ.get("BUCKET_LIST")
 s3_buckets = buckets.split(",")
 
 # get meyrin bucket creds
-meyrin_secret_name = os.environ["MEYRIN_SECRET_KEY"]
-meyrin_access_key_field = "INVENIO_S3_ACCESS_KEY"
-meyrin_secret_key_field = "INVENIO_S3_SECRET_KEY"
+# meyrin_secret_name = os.environ["MEYRIN_SECRET_KEY"]
+# meyrin_access_key_field = "INVENIO_S3_ACCESS_KEY"
+# meyrin_secret_key_field = "INVENIO_S3_SECRET_KEY"
 
-meyrin_secret = secretAPI.read_namespaced_secret(meyrin_secret_name, "jimil-test")
-meyrin_access_key = meyrin_secret.data[meyrin_access_key_field]
-meyrin_secret_key = meyrin_secret.data[meyrin_secret_key_field]
+# meyrin_secret = secretAPI.read_namespaced_secret(meyrin_secret_name, "jimil-test")
+# meyrin_access_key = meyrin_secret.data[meyrin_access_key_field]
+# meyrin_secret_key = meyrin_secret.data[meyrin_secret_key_field]
 
-# get prevessin bucket creds
-prevessin_secret_name = os.environ["PREVESSIN_SECRET_KEY"]
-prevessin_access_key_field = "RCLONE_CONFIG_S3_ACCESS_KEY_ID"
-prevessin_secret_key_field = "RCLONE_CONFIG_S3_SECRET_ACCESS_KEY"
+# # get prevessin bucket creds
+# prevessin_secret_name = os.environ["PREVESSIN_SECRET_KEY"]
+# prevessin_access_key_field = "RCLONE_CONFIG_S3_ACCESS_KEY_ID"
+# prevessin_secret_key_field = "RCLONE_CONFIG_S3_SECRET_ACCESS_KEY"
 
-prevessin_secret = secretAPI.read_namespaced_secret(prevessin_secret_name, "jimil-test")
-prevessin_access_key = meyrin_secret.data[prevessin_access_key_field]
-prevessin_secret_key = meyrin_secret.data[prevessin_secret_key_field]
+# prevessin_secret = secretAPI.read_namespaced_secret(prevessin_secret_name, "jimil-test")
+# prevessin_access_key = meyrin_secret.data[prevessin_access_key_field]
+# prevessin_secret_key = meyrin_secret.data[prevessin_secret_key_field]
 
 
 test_bucket = s3_buckets[0]
 # use aws client library to list buckets from meyrin site
 s3 = boto3.client(
     "s3",
-    aws_access_key_id=meyrin_access_key,
-    aws_secret_access_key=meyrin_secret_key,
+    aws_access_key_id=os.environ["INVENIO_S3_ACCESS_KEY"],
+    aws_secret_access_key=os.environ["INVENIO_S3_SECRET_KEY"],
     endpoint_url=os.environ["RCLONE_CONFIG_MEYRIN_ENDPOINT"],
 )
 
