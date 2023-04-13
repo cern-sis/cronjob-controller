@@ -35,13 +35,13 @@ def backup_files(bucket_name, job_num):
         if page_num % pages_per_job == job_num:
             job_name = f"ls-job-{bucket_name}-page-{page_num}"
             object_names = [obj["Key"] for obj in page.get("Contents", [])]
-            print(len(object_names))
-            command = [
-                "/bin/sh",
-                "-c",
-                f"rclone ls meyrin:{bucket_name}"
-                # f"rclone copy meyrin:{bucket_name}:/{' '.join(object_names)} s3:{bucket_name}"
-            ]
+            command = ["/bin/sh", "-c", f"rclone ls meyrin:{bucket_name}"]
+            if os.environ["DRY_RUN"] == "true":
+                command = [
+                    "/bin/sh",
+                    "-c",
+                    f"rclone copy --dry-run meyrin:{bucket_name}:/{' '.join(object_names)} s3:{bucket_name}",
+                ]
             container = client.V1Container(
                 name="backup-container",
                 image="rclone/rclone:1.56",
