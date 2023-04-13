@@ -34,7 +34,7 @@ def backup_files(bucket_name, job_num):
     page_num = 0
     for page in page_iterator:
         if page_num % pages_per_job == job_num:
-            job_name = f"ls-job-{bucket_name}-page-{page_num}"
+            job_name = f"backup-job-{bucket_name}-page-{page_num}"
             object_names = [obj["Key"] for obj in page.get("Contents", [])]
 
             # create a temporary file containing the list of files to copy
@@ -42,6 +42,7 @@ def backup_files(bucket_name, job_num):
                 f.writelines([f"{name}\n" for name in object_names])
                 file_path = f.name
 
+            print(f"{file_path} is created")
             command = ["/bin/sh", "-c", f"rclone ls meyrin:{bucket_name}"]
             if os.environ["DRY_RUN"] == "true":
                 command = [
