@@ -1,5 +1,6 @@
 # this job should list the buckets contents and create 64 jobs each job backing up files
 import os
+import tempfile
 
 import boto3
 from kubernetes import client, config
@@ -35,12 +36,18 @@ def backup_files(bucket_name, job_num):
         if page_num % pages_per_job == job_num:
             job_name = f"ls-job-{bucket_name}-page-{page_num}"
             object_names = [obj["Key"] for obj in page.get("Contents", [])]
+
+            # create a temporary file containing the list of files to copy
+            with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+                f.writelines([f"{name}\n" for name in object_names])
+                file_path = f.name
+
             command = ["/bin/sh", "-c", f"rclone ls meyrin:{bucket_name}"]
             if os.environ["DRY_RUN"] == "true":
                 command = [
                     "/bin/sh",
                     "-c",
-                    f"rclone copy --dry-run meyrin:{bucket_name}:/{' '.join(object_names)} s3:{bucket_name}",
+                    f"rclone copy --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
                 ]
             container = client.V1Container(
                 name="backup-container",
