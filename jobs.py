@@ -35,8 +35,7 @@ def backup_files(bucket_name, job_num):
         if page_num % pages_per_job == job_num:
             job_name = f"ls-job-{bucket_name}-page-{page_num}"
             object_names = [obj["Key"] for obj in page.get("Contents", [])]
-            print(object_names)
-            print("\n")
+            print(len(object_names))
             command = [
                 "/bin/sh",
                 "-c",
@@ -44,11 +43,59 @@ def backup_files(bucket_name, job_num):
                 # f"rclone copy meyrin:{bucket_name}:/{' '.join(object_names)} s3:{bucket_name}"
             ]
             container = client.V1Container(
-                name="backup-container", image="rclone/rclone:1.56", command=command
+                name="backup-container",
+                image="rclone/rclone:1.56",
+                command=command,
+                # set the env for rclone
+                env=[
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_MEYRIN_TYPE",
+                        value=os.environ["RCLONE_CONFIG_MEYRIN_TYPE"],
+                    ),
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_MEYRIN_PROVIDER",
+                        value=os.environ["RCLONE_CONFIG_MEYRIN_PROVIDER"],
+                    ),
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_MEYRIN_ENDPOINT",
+                        value=os.environ["RCLONE_CONFIG_MEYRIN_ENDPOINT"],
+                    ),
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_S3_TYPE",
+                        value=os.environ["RCLONE_CONFIG_S3_TYPE"],
+                    ),
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_S3_PROVIDER",
+                        value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
+                    ),
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_S3_PROVIDER",
+                        value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
+                    ),
+                    client.V1EnvVar(
+                        name="INVENIO_S3_ACCESS_KEY",
+                        value=os.environ["INVENIO_S3_ACCESS_KEY"],
+                    ),
+                    client.V1EnvVar(
+                        name="INVENIO_S3_SECRET_KEY",
+                        value=os.environ["INVENIO_S3_SECRET_KEY"],
+                    ),
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_S3_ACCESS_KEY_ID",
+                        value=os.environ["RCLONE_CONFIG_S3_ACCESS_KEY_ID"],
+                    ),
+                    client.V1EnvVar(
+                        name="RCLONE_CONFIG_S3_SECRET_ACCESS_KEY",
+                        value=os.environ["RCLONE_CONFIG_S3_SECRET_ACCESS_KEY"],
+                    ),
+                ],
             )
             template = client.V1PodTemplateSpec(
                 metadata=client.V1ObjectMeta(name=job_name),
-                spec=client.V1PodSpec(restart_policy="Never", containers=[container]),
+                spec=client.V1PodSpec(
+                    restart_policy="Never",
+                    containers=[container],
+                ),
             )
             job = client.V1Job(
                 api_version="batch/v1",
