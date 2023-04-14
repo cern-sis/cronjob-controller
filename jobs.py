@@ -58,6 +58,7 @@ def backup_files(bucket_name, job_num):
                     client.V1VolumeMount(
                         name="files-volume",
                         mount_path=f"{file_path}",
+                        sub_path=f"{os.path.basename(file_path)}"
                     )
                 ],
                 # set the env for rclone
