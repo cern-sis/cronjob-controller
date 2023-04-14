@@ -109,7 +109,7 @@ def backup_files(bucket_name, job_num):
             )
             volume = client.V1Volume(
                 name="files-volume",
-                temp_file=client.V1EmptyDirVolumeSource(),
+                empty_dir=client.V1EmptyDirVolumeSource(),
             )
 
             template = client.V1PodTemplateSpec(
