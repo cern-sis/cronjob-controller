@@ -48,8 +48,7 @@ def backup_files(bucket_name, job_num):
                 command = [
                     "/bin/sh",
                     "-c",
-                    "sleep infinity"
-                    # f"rclone copy --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
+                    f"rclone copy --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
                 ]
             container = client.V1Container(
                 name="backup-container",
