@@ -51,59 +51,73 @@ def backup_files(bucket_name, job_num):
                     "sleep infinity"
                     # f"rclone copy --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
                 ]
-            container = client.V1Container(
-                name="backup-container",
-                image="rclone/rclone:1.56",
-                command=command,
-                # set the env for rclone
-                env=[
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_MEYRIN_TYPE",
-                        value=os.environ["RCLONE_CONFIG_MEYRIN_TYPE"],
-                    ),
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_MEYRIN_PROVIDER",
-                        value=os.environ["RCLONE_CONFIG_MEYRIN_PROVIDER"],
-                    ),
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_MEYRIN_ENDPOINT",
-                        value=os.environ["RCLONE_CONFIG_MEYRIN_ENDPOINT"],
-                    ),
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_S3_TYPE",
-                        value=os.environ["RCLONE_CONFIG_S3_TYPE"],
-                    ),
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_S3_PROVIDER",
-                        value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
-                    ),
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_S3_PROVIDER",
-                        value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
-                    ),
-                    client.V1EnvVar(
-                        name="INVENIO_S3_ACCESS_KEY",
-                        value=os.environ["INVENIO_S3_ACCESS_KEY"],
-                    ),
-                    client.V1EnvVar(
-                        name="INVENIO_S3_SECRET_KEY",
-                        value=os.environ["INVENIO_S3_SECRET_KEY"],
-                    ),
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_S3_ACCESS_KEY_ID",
-                        value=os.environ["RCLONE_CONFIG_S3_ACCESS_KEY_ID"],
-                    ),
-                    client.V1EnvVar(
-                        name="RCLONE_CONFIG_S3_SECRET_ACCESS_KEY",
-                        value=os.environ["RCLONE_CONFIG_S3_SECRET_ACCESS_KEY"],
-                    ),
-                ],
+            container = (
+                client.V1Container(
+                    name="backup-container",
+                    image="rclone/rclone:1.56",
+                    command=command,
+                    volume_mounts=[
+                        client.V1VolumeMount(
+                            name="files-volume",
+                            mount_path=f"{file_path}",
+                        )
+                    ],
+                    # set the env for rclone
+                    env=[
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_MEYRIN_TYPE",
+                            value=os.environ["RCLONE_CONFIG_MEYRIN_TYPE"],
+                        ),
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_MEYRIN_PROVIDER",
+                            value=os.environ["RCLONE_CONFIG_MEYRIN_PROVIDER"],
+                        ),
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_MEYRIN_ENDPOINT",
+                            value=os.environ["RCLONE_CONFIG_MEYRIN_ENDPOINT"],
+                        ),
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_S3_TYPE",
+                            value=os.environ["RCLONE_CONFIG_S3_TYPE"],
+                        ),
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_S3_PROVIDER",
+                            value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
+                        ),
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_S3_PROVIDER",
+                            value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
+                        ),
+                        client.V1EnvVar(
+                            name="INVENIO_S3_ACCESS_KEY",
+                            value=os.environ["INVENIO_S3_ACCESS_KEY"],
+                        ),
+                        client.V1EnvVar(
+                            name="INVENIO_S3_SECRET_KEY",
+                            value=os.environ["INVENIO_S3_SECRET_KEY"],
+                        ),
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_S3_ACCESS_KEY_ID",
+                            value=os.environ["RCLONE_CONFIG_S3_ACCESS_KEY_ID"],
+                        ),
+                        client.V1EnvVar(
+                            name="RCLONE_CONFIG_S3_SECRET_ACCESS_KEY",
+                            value=os.environ["RCLONE_CONFIG_S3_SECRET_ACCESS_KEY"],
+                        ),
+                    ],
+                ),
             )
+            volume = client.V1Volume(
+                name="files-volume",
+                temp_file=client.V1EmptyDirVolumeSource(),
+            )
+
             template = client.V1PodTemplateSpec(
                 metadata=client.V1ObjectMeta(name=job_name),
                 spec=client.V1PodSpec(
                     restart_policy="Never",
                     containers=[container],
+                    volume=[volume],
                 ),
             )
             job = client.V1Job(
