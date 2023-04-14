@@ -129,6 +129,8 @@ def backup_files(bucket_name, job_num):
                     backoff_limit=0,
                 ),
             )
+            job_dict = job.to_dict()
+            print(job_dict)
             batchAPI.create_namespaced_job(namespace="jimil-test", body=job)
         page_num += 1
 
