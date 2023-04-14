@@ -117,7 +117,7 @@ def backup_files(bucket_name, job_num):
                 spec=client.V1PodSpec(
                     restart_policy="Never",
                     containers=[container],
-                    volume=[volume],
+                    volumes=[volume],
                 ),
             )
             job = client.V1Job(
