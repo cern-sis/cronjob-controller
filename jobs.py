@@ -113,7 +113,6 @@ def backup_files(bucket_name, job_num):
             )
 
             template = client.V1PodTemplateSpec(
-                metadata=client.V1ObjectMeta(name=job_name),
                 spec=client.V1PodSpec(
                     restart_policy="Never",
                     containers=[container],
@@ -131,6 +130,7 @@ def backup_files(bucket_name, job_num):
             )
             # job_dict = job.to_dict()
             # print(job_dict)
+            # fails
             j = batchAPI.create_namespaced_job(namespace="jimil-test", body=job)
             print(j.to_str())
         page_num += 1
