@@ -114,7 +114,7 @@ def backup_files(bucket_name, job_num):
             )
             volume = client.V1Volume(
                 name="files-volume",
-                config_map=client.V1ConfigMapVolumeSource(name="backup-job-cfg"),
+                config_map=client.V1ConfigMapVolumeSource(name=f"backup-job-cfg-{bucket_name}-{page_num}"),
             )
 
             template = client.V1PodTemplateSpec(
