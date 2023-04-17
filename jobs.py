@@ -91,15 +91,11 @@ def backup_files(bucket_name, job_num):
                         value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
                     ),
                     client.V1EnvVar(
-                        name="RCLONE_CONFIG_S3_PROVIDER",
-                        value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
-                    ),
-                    client.V1EnvVar(
-                        name="INVENIO_S3_ACCESS_KEY",
+                        name="RCLONE_CONFIG_MEYRIN_ACCESS_KEY",
                         value=os.environ["INVENIO_S3_ACCESS_KEY"],
                     ),
                     client.V1EnvVar(
-                        name="INVENIO_S3_SECRET_KEY",
+                        name="RCLONE_CONFIG_MEYRIN_SECRET_KEY",
                         value=os.environ["INVENIO_S3_SECRET_KEY"],
                     ),
                     client.V1EnvVar(
@@ -114,7 +110,9 @@ def backup_files(bucket_name, job_num):
             )
             volume = client.V1Volume(
                 name="files-volume",
-                config_map=client.V1ConfigMapVolumeSource(name=f"backup-job-cfg-{bucket_name}-{page_num}"),
+                config_map=client.V1ConfigMapVolumeSource(
+                    name=f"backup-job-cfg-{bucket_name}-{page_num}"
+                ),
             )
 
             template = client.V1PodTemplateSpec(
