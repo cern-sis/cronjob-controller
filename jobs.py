@@ -91,6 +91,10 @@ def backup_files(bucket_name, job_num):
                         value=os.environ["RCLONE_CONFIG_S3_PROVIDER"],
                     ),
                     client.V1EnvVar(
+                        name="RCLONE_CONFIG_S3_ENDPOINT",
+                        value=os.environ["RCLONE_CONFIG_S3_ENDPOINT"],
+                    )
+                    client.V1EnvVar(
                         name="RCLONE_CONFIG_MEYRIN_ACCESS_KEY",
                         value=os.environ["INVENIO_S3_ACCESS_KEY"],
                     ),
