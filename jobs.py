@@ -48,7 +48,8 @@ def backup_files(bucket_name, job_num):
                 command = [
                     "/bin/sh",
                     "-c",
-                    f"rclone copy --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
+                    "sleep infinity"
+                    # f"rclone copy --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
                 ]
             container = client.V1Container(
                 name="backup-container",
@@ -58,7 +59,7 @@ def backup_files(bucket_name, job_num):
                     client.V1VolumeMount(
                         name="files-volume",
                         mount_path=f"{file_path}",
-                        sub_path=f"{os.path.basename(file_path)}"
+                        sub_path=f"{os.path.basename(file_path)}",
                     )
                 ],
                 # set the env for rclone
