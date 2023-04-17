@@ -42,8 +42,7 @@ def backup_files(bucket_name, job_num):
                 f.writelines([f"{name}\n" for name in object_names])
                 file_path = f.name
 
-            print(f"{file_path} is created")
-            config_map = "backup-job-cfg"
+            config_map = f"backup-job-cfg-{bucket_name}-{page_num}"
             config_map_data = {os.path.basename(file_path): open(file_path).read()}
             metadata = client.V1ObjectMeta(name=config_map)
             config_map = client.V1ConfigMap(data=config_map_data, metadata=metadata)
