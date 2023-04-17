@@ -43,6 +43,14 @@ def backup_files(bucket_name, job_num):
                 file_path = f.name
 
             print(f"{file_path} is created")
+            config_map = "backup-job-cfg"
+            config_map_data = {os.path.basename(file_path): open(file_path).read()}
+            metadata = client.V1ObjectMeta(name=config_map)
+            config_map = client.V1ConfigMap(data=config_map_data, metadata=metadata)
+            secretAPI.create_namespaced_config_map(
+                namespace="jimil-test", body=config_map
+            )
+
             command = ["/bin/sh", "-c", f"rclone ls meyrin:{bucket_name}"]
             if os.environ["DRY_RUN"] == "true":
                 command = [
@@ -108,7 +116,7 @@ def backup_files(bucket_name, job_num):
             )
             volume = client.V1Volume(
                 name="files-volume",
-                empty_dir=client.V1EmptyDirVolumeSource(),
+                config_map=client.V1ConfigMapVolumeSource(name="backup-job-cfg"),
             )
 
             template = client.V1PodTemplateSpec(
