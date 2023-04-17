@@ -47,7 +47,7 @@ def backup_files(bucket_name, job_num):
             metadata = client.V1ObjectMeta(name=config_map)
             config_map = client.V1ConfigMap(data=config_map_data, metadata=metadata)
             secretAPI.create_namespaced_config_map(
-                namespace="jimil-test", body=config_map
+                namespace=os.environ["NAMESPACE"], body=config_map
             )
 
             command = ["/bin/sh", "-c", f"rclone ls meyrin:{bucket_name}"]
@@ -135,11 +135,7 @@ def backup_files(bucket_name, job_num):
                     backoff_limit=0,
                 ),
             )
-            # job_dict = job.to_dict()
-            # print(job_dict)
-            # fails
-            j = batchAPI.create_namespaced_job(namespace="jimil-test", body=job)
-            print(j.to_str())
+            batchAPI.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
         page_num += 1
 
 
