@@ -23,6 +23,18 @@ meyrin_s3 = boto3.client(
 )
 
 
+def cleanup_configmap(config_map):
+    try:
+        secretAPI.delete_namespaced_config_map(
+            name=config_map,
+            namespace=os.environ["NAMESPACE"],
+            body=client.V1DeleteOptions(),
+        )
+    except client.rest.ApiException as e:
+        if e.status == 404:
+            return
+
+
 def backup_files(bucket_name, job_num):
     # paginate over S3 Objects
     paginator = meyrin_s3.get_paginator("list_objects_v2")
@@ -36,13 +48,12 @@ def backup_files(bucket_name, job_num):
         if page_num % pages_per_job == job_num:
             job_name = f"backup-job-{bucket_name}-page-{page_num}"
             object_names = [obj["Key"] for obj in page.get("Contents", [])]
-
             # create a temporary file containing the list of files to copy
             with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
                 f.writelines([f"{name}\n" for name in object_names])
                 file_path = f.name
-
             config_map = f"backup-job-cfg-{bucket_name}-{page_num}"
+            cleanup_configmap(config_map)
             config_map_data = {os.path.basename(file_path): open(file_path).read()}
             metadata = client.V1ObjectMeta(name=config_map)
             config_map = client.V1ConfigMap(data=config_map_data, metadata=metadata)
