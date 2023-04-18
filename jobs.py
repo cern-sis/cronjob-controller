@@ -40,9 +40,9 @@ def cleanup_configmap(config_map):
 def backup(bucket_name):
     # paginate over S3 Objects
     paginator = meyrin_s3.get_paginator("list_objects_v2")
-    page_iterator = iter(paginator.paginate(
-        Bucket=bucket_name, PaginationConfig={"PageSize": 1000}
-    ))
+    page_iterator = iter(
+        paginator.paginate(Bucket=bucket_name, PaginationConfig={"PageSize": 1000})
+    )
 
     page_num = 0
 
@@ -180,7 +180,6 @@ def backup(bucket_name):
         page_num += 1
 
 
-# approach 1
 def backup_files(bucket_name, job_num):
     # paginate over S3 Objects
     paginator = meyrin_s3.get_paginator("list_objects_v2")
