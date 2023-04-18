@@ -47,7 +47,7 @@ def backup(bucket_name):
     page_num = 0
 
     while True:
-        running_jobs = api.list_job_for_all_namespaces(
+        running_jobs = batchAPI.list_namespaced_job(
             field_selector="status.phase=Running"
         )
         if len(running_jobs.items) >= 64:
@@ -166,7 +166,7 @@ def backup(bucket_name):
         page_num += 1
 
         # delete a completed job
-        completed_job = api.list_namespaced_job(
+        completed_job = batchAPI.list_namespaced_job(
             namespace=os.environ["NAMESPACE"], field_selector="status.phase=Succeeded"
         )
         if len(completed_job) > 0:
