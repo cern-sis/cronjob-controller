@@ -48,6 +48,7 @@ def backup(bucket_name):
 
     while True:
         running_jobs = batchAPI.list_namespaced_job(
+            namespace=os.environ["NAMESPACE"],
             field_selector="status.phase=Running"
         )
         if len(running_jobs.items) >= 64:
