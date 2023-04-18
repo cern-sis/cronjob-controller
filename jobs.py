@@ -47,10 +47,15 @@ def backup(bucket_name):
     page_num = 0
 
     while True:
-        running_jobs = batchAPI.list_namespaced_job(
+        jobs = batchAPI.list_namespaced_job(
             namespace=os.environ["NAMESPACE"],
-            field_selector="status.phase=Running"
-        )
+        ).items
+        running_jobs = [job for job in jobs if job.status.active is not None]
+        completed_jobs = [
+            job
+            for job in jobs
+            if job.status.succeeded is not None or job.status.failed is not None
+        ]
         if len(running_jobs.items) >= 64:
             time.sleep(5)
             continue
@@ -164,17 +169,15 @@ def backup(bucket_name):
             ),
         )
         batchAPI.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
-        page_num += 1
 
-        # delete a completed job
-        completed_job = batchAPI.list_namespaced_job(
-            namespace=os.environ["NAMESPACE"], field_selector="status.phase=Succeeded"
-        )
-        if len(completed_job) > 0:
-            oldest_job = completed_job.items[0]
-            batchAPI.delete_namespaced_job(
-                name=oldest_job.metadata.name, namespace=oldest_job.metadata.namespace
+        if len(running_jobs) + 1 > 64 and completed_jobs:
+            oldest_job = min(
+                completed_jobs, key=lambda job: job.metadata.creation_timestamp
             )
+            batchAPI.delete_namespaced_job(
+                name=oldest_job.metadata.name, namespace=os.environ["NAMESPACE"]
+            )
+        page_num += 1
 
 
 # approach 1
