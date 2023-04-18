@@ -56,7 +56,7 @@ def backup(bucket_name):
             for job in jobs
             if job.status.succeeded is not None or job.status.failed is not None
         ]
-        if len(running_jobs.items) >= 64:
+        if len(running_jobs) >= 64:
             time.sleep(5)
             continue
 
