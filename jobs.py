@@ -25,14 +25,17 @@ meyrin_s3 = boto3.client(
 
 
 def cleanup_configmap(config_map):
+    print(f"cleaning up config map - {config_map}")
     try:
         secretAPI.delete_namespaced_config_map(
             name=config_map,
             namespace=os.environ["NAMESPACE"],
             body=client.V1DeleteOptions(),
         )
+        print(f"{config_map} is deleted")
     except client.rest.ApiException as e:
         if e.status == 404:
+            print(f"{config_map} not found")
             return
 
 
@@ -56,9 +59,6 @@ def backup(bucket_name):
             for job in jobs
             if job.status.succeeded is not None or job.status.failed is not None
         ]
-        if len(running_jobs) >= 64:
-            time.sleep(5)
-            continue
 
         page = next(page_iterator, None)
         if not page:
@@ -170,13 +170,15 @@ def backup(bucket_name):
         )
         batchAPI.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
 
-        if len(running_jobs) + 1 > 64 and completed_jobs:
+        # cleanup completed jobs
+        if len(running_jobs) > 63 and completed_jobs:
             oldest_job = min(
                 completed_jobs, key=lambda job: job.metadata.creation_timestamp
             )
             batchAPI.delete_namespaced_job(
                 name=oldest_job.metadata.name, namespace=os.environ["NAMESPACE"]
             )
+            print(f"{oldest_job} is deleted")
         page_num += 1
 
 
