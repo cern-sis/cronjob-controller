@@ -27,13 +27,15 @@ meyrin_s3 = boto3.client(
 def cleanup_configmap(config_map):
     print(f"cleaning up config map - {config_map}")
     try:
-        secretAPI.delete_namespaced_config_map(
+        response = secretAPI.delete_namespaced_config_map(
             name=config_map,
             namespace=os.environ["NAMESPACE"],
             body=client.V1DeleteOptions(),
         )
+        print(f"{response}")
         print(f"{config_map} is deleted")
     except client.rest.ApiException as e:
+        print(e)
         if e.status == 404:
             print(f"{config_map} not found")
             return
