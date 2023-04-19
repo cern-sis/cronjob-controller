@@ -59,7 +59,10 @@ def backup(bucket_name):
             for job in jobs
             if job.status.succeeded is not None or job.status.failed is not None
         ]
-
+        # don't spawn more jobs if job count exceeds 64
+        if len(running_jobs) >= 64:
+                time.sleep(5)
+                continue
         page = next(page_iterator, None)
         if not page:
             break
