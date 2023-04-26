@@ -1,4 +1,3 @@
-# this job should list the buckets contents and create 64 jobs each job backing up files
 import os
 import tempfile
 import time
@@ -27,7 +26,7 @@ meyrin_s3 = boto3.client(
 def cleanup_configmap(config_map):
     print(f"cleaning up config map - {config_map}")
     try:
-        response = secretAPI.delete_namespaced_config_map(
+        secretAPI.delete_namespaced_config_map(
             name=config_map,
             namespace=os.environ["NAMESPACE"],
             body=client.V1DeleteOptions(),
@@ -37,6 +36,7 @@ def cleanup_configmap(config_map):
         if e.status == 404:
             print(f"{config_map} not found")
             return
+
 
 def backup(bucket_name):
     # paginate over S3 Objects
@@ -57,10 +57,10 @@ def backup(bucket_name):
             for job in jobs
             if job.status.succeeded is not None or job.status.failed is not None
         ]
-        # don't spawn more jobs if job count exceeds 64
-        if len(running_jobs) >= 64:
-                time.sleep(5)
-                continue
+        # don't spawn more jobs if job count exceeds total jobs
+        if len(running_jobs) >= os.environ["TOTAL_JOBS"]:
+            time.sleep(5)
+            continue
         page = next(page_iterator, None)
         if not page:
             break
@@ -172,7 +172,7 @@ def backup(bucket_name):
         batchAPI.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
 
         # cleanup completed jobs
-        if len(running_jobs) > 63 and completed_jobs:
+        if len(running_jobs) > os.environ["TOTAL_JOBS"] - 1 and completed_jobs:
             oldest_job = min(
                 completed_jobs, key=lambda job: job.metadata.creation_timestamp
             )
@@ -182,8 +182,7 @@ def backup(bucket_name):
             print(f"{oldest_job} is deleted")
         page_num += 1
 
+
 # backup all 16 buckets
 for bucket in s3_buckets:
     backup(bucket)
-    # for job in range(64):
-    #     backup_files(bucket, job)
