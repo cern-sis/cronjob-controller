@@ -57,12 +57,19 @@ def backup(bucket_name):
             for job in jobs
             if job.status.succeeded is not None or job.status.failed is not None
         ]
-        for job in completed_jobs:
-            print(f"{job} is completed")
+
+        # cleanup completed jobs
+        for jobs in completed_jobs:
+            batchAPI.delete_namespaced_job(
+                name=jobs.metadata.name, namespace=os.environ["NAMESPACE"]
+            )
+            print(f"{jobs.metadata.name} is deleted")
+
         # don't spawn more jobs if job count exceeds total jobs
         if len(running_jobs) >= int(os.environ["TOTAL_JOBS"]):
             time.sleep(5)
             continue
+
         page = next(page_iterator, None)
         if not page:
             break
@@ -172,16 +179,6 @@ def backup(bucket_name):
             ),
         )
         batchAPI.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
-
-        # cleanup completed jobs
-        if len(running_jobs) > int(os.environ["TOTAL_JOBS"]) - 1 and completed_jobs:
-            oldest_job = min(
-                completed_jobs, key=lambda job: job.metadata.creation_timestamp
-            )
-            batchAPI.delete_namespaced_job(
-                name=oldest_job.metadata.name, namespace=os.environ["NAMESPACE"]
-            )
-            print(f"{oldest_job} is deleted")
         page_num += 1
 
 
