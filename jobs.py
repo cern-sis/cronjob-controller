@@ -57,6 +57,8 @@ def backup(bucket_name):
             for job in jobs
             if job.status.succeeded is not None or job.status.failed is not None
         ]
+        for job in completed_jobs:
+            print(f"{job} is completed")
         # don't spawn more jobs if job count exceeds total jobs
         if len(running_jobs) >= int(os.environ["TOTAL_JOBS"]):
             time.sleep(5)
