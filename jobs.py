@@ -24,14 +24,14 @@ meyrin_s3 = boto3.client(
 
 
 def cleanup_configmap(config_map):
-    print(f"cleaning up config map - {config_map}")
+    # print(f"cleaning up config map - {config_map}")
     try:
         secretAPI.delete_namespaced_config_map(
             name=config_map,
             namespace=os.environ["NAMESPACE"],
             body=client.V1DeleteOptions(),
         )
-        print(f"{config_map} is deleted")
+        # print(f"{config_map} is deleted")
     except client.rest.ApiException as e:
         if e.status == 404:
             print(f"{config_map} not found")
@@ -51,7 +51,10 @@ def backup(bucket_name):
         jobs = batchAPI.list_namespaced_job(
             namespace=os.environ["NAMESPACE"],
         ).items
+
+        # list all running jobs
         running_jobs = [job for job in jobs if job.status.active is not None]
+        # list all completed jobs
         completed_jobs = [
             job
             for job in jobs
@@ -60,16 +63,18 @@ def backup(bucket_name):
 
         # cleanup completed jobs
         for jobs in completed_jobs:
+            print(f"{jobs.metadata.name} is completed - deleting")
             batchAPI.delete_namespaced_job(
                 name=jobs.metadata.name, namespace=os.environ["NAMESPACE"]
             )
-            print(f"{jobs.metadata.name} is deleted")
+            # print(f"{jobs.metadata.name} is deleted")
 
-        # don't spawn more jobs if job count exceeds total jobs
+        # wait if running jobs exceeds the max parallel jobs
         if len(running_jobs) >= int(os.environ["TOTAL_JOBS"]):
             time.sleep(5)
             continue
 
+        # spawn new job
         page = next(page_iterator, None)
         if not page:
             break
