@@ -64,10 +64,13 @@ def backup(bucket_name):
         # cleanup completed jobs
         for jobs in completed_jobs:
             print(f"{jobs.metadata.name} is completed - deleting")
-            batchAPI.delete_namespaced_job(
-                name=jobs.metadata.name, namespace=os.environ["NAMESPACE"]
-            )
-            # print(f"{jobs.metadata.name} is deleted")
+            try:
+                batchAPI.delete_namespaced_job(
+                    name=jobs.metadata.name, namespace=os.environ["NAMESPACE"]
+                )
+            except client.rest.ApiException as e:
+                if e.status == 404:
+                    print(f"{jobs.metadata.name} deleted")
 
         # wait if running jobs exceeds the max parallel jobs
         if len(running_jobs) >= int(os.environ["TOTAL_JOBS"]):
