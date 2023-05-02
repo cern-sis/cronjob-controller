@@ -177,6 +177,13 @@ def backup(bucket_name):
                 volumes=[volume],
             ),
         )
+
+        # get cronjob uid
+        cronjob = api.read_namespaced_cron_job(
+            name=os.environ["PARENT_NAME"], namespace=os.environ["NAMESPACE"]
+        )
+        cronjob_uid = cronjob.metadata.uid
+
         job = client.V1Job(
             api_version="batch/v1",
             kind="Job",
@@ -189,6 +196,7 @@ def backup(bucket_name):
                         name=os.environ["PARENT_NAME"],
                         controller=True,
                         block_owner_deletion=True,
+                        uid=cronjob_uid,
                     )
                 ],
             ),
