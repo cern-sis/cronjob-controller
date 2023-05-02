@@ -187,6 +187,8 @@ def backup(bucket_name):
                         api_version="batch/v1beta1",
                         kind="CronJob",
                         name=os.environ["PARENT_NAME"],
+                        controller=True,
+                        block_owner_deletion=True,
                     )
                 ],
             ),
