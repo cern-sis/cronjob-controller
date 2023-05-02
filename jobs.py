@@ -180,7 +180,16 @@ def backup(bucket_name):
         job = client.V1Job(
             api_version="batch/v1",
             kind="Job",
-            metadata=client.V1ObjectMeta(name=job_name),
+            metadata=client.V1ObjectMeta(
+                name=job_name,
+                owner_references=[
+                    client.V1OwnerReference(
+                        api_version="batch/v1beta1",
+                        kind="CronJob",
+                        name=os.environ["PARENT_NAME"],
+                    )
+                ],
+            ),
             spec=client.V1JobSpec(
                 template=template,
                 backoff_limit=0,
