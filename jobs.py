@@ -83,6 +83,7 @@ def backup(bucket_name):
             break
 
         job_name = f"backup-job-{bucket_name}-page-{page_num}"
+        print(f"Spawning a new job {job_name}")
         object_names = [obj["Key"] for obj in page.get("Contents", [])]
         # create a temporary file containing the list of files to copy
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
