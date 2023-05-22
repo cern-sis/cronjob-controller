@@ -61,9 +61,10 @@ def backup(bucket_name):
             if job.status.succeeded is not None or job.status.failed is not None
         ]
 
-        # cleanup completed jobs
+        # cleanup completed jobs and pods
         for jobs in completed_jobs:
             print(f"{jobs.metadata.name} is completed - deleting")
+            label_selector = f"job-name={jobs.metadata.name}"
             try:
                 batchAPI.delete_namespaced_job(
                     name=jobs.metadata.name, namespace=os.environ["NAMESPACE"]
@@ -71,6 +72,17 @@ def backup(bucket_name):
             except client.rest.ApiException as e:
                 if e.status == 404:
                     print(f"{jobs.metadata.name} deleted")
+            try:
+                pod = secretAPI.list_namespaced_pod(
+                    namespace=os.environ["NAMESPACE"], label_selector=label_selector
+                ).items
+                # delete the pod
+                secretAPI.delete_namespaced_pod(
+                    name=pod.metadata.name, namespace=pod.metadata.namespace
+                )
+            except client.rest.ApiException as e:
+                if e.status == 404:
+                    print(f"{pod.metadata.name} delete")
         completed_jobs.clear()
         # wait if running jobs exceeds the max parallel jobs
         if len(running_jobs) >= int(os.environ["TOTAL_JOBS"]):
