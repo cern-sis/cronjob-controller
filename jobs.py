@@ -80,10 +80,11 @@ def backup(bucket_name):
                 for p in pod:
                     print(f"{p.metadata.name} pod is being deleted")
                 # delete the pod
-                secretAPI.delete_namespaced_pod(
-                    name=pod.metadata.name, namespace=pod.metadata.namespace
-                )
-                print(f"{pod.metadata.name} is deleted")
+                for p in pod:
+                    secretAPI.delete_namespaced_pod(
+                        name=pod.metadata.name, namespace=p.metadata.namespace
+                    )
+                    print(f"{p.metadata.name} is deleted")
             except client.rest.ApiException as e:
                 print(e)
                 if e.status == 404:
