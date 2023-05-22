@@ -85,6 +85,7 @@ def backup(bucket_name):
                 )
                 print(f"{pod.metadata.name} is deleted")
             except client.rest.ApiException as e:
+                print(e)
                 if e.status == 404:
                     print(f"{pod.metadata.name} delete")
         completed_jobs.clear()
