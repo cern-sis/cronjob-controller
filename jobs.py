@@ -76,6 +76,8 @@ def backup(bucket_name):
                 pod = secretAPI.list_namespaced_pod(
                     namespace=os.environ["NAMESPACE"], label_selector=label_selector
                 ).items
+                for p in pod:
+                    print(f"{p.metadata.name} pod is being deleted")
                 # delete the pod
                 secretAPI.delete_namespaced_pod(
                     name=pod.metadata.name, namespace=pod.metadata.namespace
