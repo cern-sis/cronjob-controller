@@ -82,13 +82,13 @@ def backup(bucket_name):
                 # delete the pod
                 for p in pod:
                     secretAPI.delete_namespaced_pod(
-                        name=pod.metadata.name, namespace=p.metadata.namespace
+                        name=p.metadata.name, namespace=p.metadata.namespace
                     )
                     print(f"{p.metadata.name} is deleted")
             except client.rest.ApiException as e:
                 print(e)
                 if e.status == 404:
-                    print(f"{pod.metadata.name} delete")
+                    print("deleted")
         completed_jobs.clear()
         # wait if running jobs exceeds the max parallel jobs
         if len(running_jobs) >= int(os.environ["TOTAL_JOBS"]):
