@@ -119,7 +119,7 @@ def backup(bucket_name):
         command = [
             "/bin/sh",
             "-c",
-            f"rclone copy meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
+            f"rclone copy meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path} --transfers 1 --checkers 1 --tpslimit 5 --buffer-size 0M --use-mmap --stats-one-line",
         ]
         if os.environ["DRY_RUN"] == "true":
             command = [
