@@ -131,16 +131,16 @@ def backup(bucket_name):
             name="backup-container",
             image="rclone/rclone:1.56",
             command=command,
-            resources=client.V1ResourceRequirements(
-                limits={
-                    "cpu": os.environ["CPU_LIMIT"],
-                    "memory": os.environ["MEMORY_LIMIT"],
-                },
-                requests={
-                    "cpu": os.environ["CPU_REQUEST"],
-                    "memory": os.environ["MEMORY_REQUEST"],
-                },
-            ),
+            # resources=client.V1ResourceRequirements(
+            #     limits={
+            #         "cpu": os.environ["CPU_LIMIT"],
+            #         "memory": os.environ["MEMORY_LIMIT"],
+            #     },
+            #     requests={
+            #         "cpu": os.environ["CPU_REQUEST"],
+            #         "memory": os.environ["MEMORY_REQUEST"],
+            #     },
+            # ),
             volume_mounts=[
                 client.V1VolumeMount(
                     name="files-volume",
