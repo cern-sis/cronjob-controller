@@ -52,8 +52,8 @@ def backup(bucket_name):
             namespace=os.environ["NAMESPACE"],
         ).items
 
-        # list all running jobs
-        running_jobs = [job for job in jobs if job.status.active is not None]
+        # list all running "backup" jobs
+        running_jobs = [job for job in jobs if job.status.active is not None and job.metadata.name.startswith("backup-job")]
         # list all completed jobs
         completed_jobs = [
             job
