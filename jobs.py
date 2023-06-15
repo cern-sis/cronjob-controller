@@ -54,6 +54,7 @@ def backup(bucket_name):
 
         # list all running "backup" jobs
         running_jobs = [job for job in jobs if job.status.active is not None]
+        print("running jobs: ")
         for j in running_jobs:
             print(j.metadata.name)
         # list all completed jobs
@@ -236,7 +237,9 @@ def backup(bucket_name):
                 backoff_limit=0,
             ),
         )
+        # wait until the job is created
         batchAPI.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
+        time.sleep(2)
         page_num += 1
 
 
