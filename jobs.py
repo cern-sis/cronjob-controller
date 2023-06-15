@@ -53,7 +53,9 @@ def backup(bucket_name):
         ).items
 
         # list all running "backup" jobs
-        running_jobs = [job for job in jobs if job.status.active is not None and job.metadata.name.startswith("backup-job")]
+        running_jobs = [job for job in jobs if job.status.active is not None]
+        for j in running_jobs:
+            print(j.metadata.name)
         # list all completed jobs
         completed_jobs = [
             job
@@ -91,7 +93,7 @@ def backup(bucket_name):
                     print("deleted")
         completed_jobs.clear()
         # wait if running jobs exceeds the max parallel jobs
-        if len(running_jobs) >= int(os.environ["TOTAL_JOBS"]):
+        if len(running_jobs) - 1 >= int(os.environ["TOTAL_JOBS"]):
             time.sleep(5)
             continue
 
