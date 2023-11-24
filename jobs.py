@@ -6,9 +6,9 @@ import boto3
 from kubernetes import client, config
 
 config.load_incluster_config()
-api = client.BatchV1beta1Api()
 secretAPI = client.CoreV1Api()
 batchAPI = client.BatchV1Api()
+
 # get buckets from the cronjob specs
 buckets = os.environ.get("BUCKET_LIST")
 s3_buckets = buckets.split(",")
@@ -211,7 +211,7 @@ def backup(bucket_name):
         )
 
         # get cronjob uid
-        cronjob = api.read_namespaced_cron_job(
+        cronjob = batchAPI.read_namespaced_cron_job(
             name=os.environ["PARENT_NAME"], namespace=os.environ["NAMESPACE"]
         )
         cronjob_uid = cronjob.metadata.uid
