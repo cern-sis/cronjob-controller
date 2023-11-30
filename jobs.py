@@ -6,8 +6,8 @@ import boto3
 from kubernetes import client, config
 
 config.load_incluster_config()
-secretAPI = client.CoreV1Api()
-batchAPI = client.BatchV1Api()
+core_api = client.CoreV1Api()
+batch_api = client.BatchV1Api()
 
 # get buckets from the cronjob specs
 buckets = os.environ.get("BUCKET_LIST")
@@ -26,7 +26,7 @@ meyrin_s3 = boto3.client(
 def cleanup_configmap(config_map):
     # print(f"cleaning up config map - {config_map}")
     try:
-        secretAPI.delete_namespaced_config_map(
+        core_api.delete_namespaced_config_map(
             name=config_map,
             namespace=os.environ["NAMESPACE"],
             body=client.V1DeleteOptions(),
@@ -48,7 +48,7 @@ def backup(bucket_name):
     page_num = 0
 
     while True:
-        jobs = batchAPI.list_namespaced_job(
+        jobs = batch_api.list_namespaced_job(
             namespace=os.environ["NAMESPACE"],
         ).items
 
@@ -69,14 +69,14 @@ def backup(bucket_name):
             print(f"{jobs.metadata.name} is completed - deleting")
             label_selector = f"job-name={jobs.metadata.name}"
             try:
-                batchAPI.delete_namespaced_job(
+                batch_api.delete_namespaced_job(
                     name=jobs.metadata.name, namespace=os.environ["NAMESPACE"]
                 )
             except client.rest.ApiException as e:
                 if e.status == 404:
                     print(f"{jobs.metadata.name} deleted")
             try:
-                pod = secretAPI.list_namespaced_pod(
+                pod = core_api.list_namespaced_pod(
                     namespace=os.environ["NAMESPACE"], label_selector=label_selector
                 ).items
                 print(f"pod length: {len(pod)}")
@@ -84,7 +84,7 @@ def backup(bucket_name):
                     print(f"{p.metadata.name} pod is being deleted")
                 # delete the pod
                 for p in pod:
-                    secretAPI.delete_namespaced_pod(
+                    core_api.delete_namespaced_pod(
                         name=p.metadata.name, namespace=p.metadata.namespace
                     )
                     print(f"{p.metadata.name} is deleted")
@@ -115,7 +115,7 @@ def backup(bucket_name):
         config_map_data = {os.path.basename(file_path): open(file_path).read()}
         metadata = client.V1ObjectMeta(name=config_map)
         config_map = client.V1ConfigMap(data=config_map_data, metadata=metadata)
-        secretAPI.create_namespaced_config_map(
+        core_api.create_namespaced_config_map(
             namespace=os.environ["NAMESPACE"], body=config_map
         )
 
@@ -211,7 +211,7 @@ def backup(bucket_name):
         )
 
         # get cronjob uid
-        cronjob = batchAPI.read_namespaced_cron_job(
+        cronjob = batch_api.read_namespaced_cron_job(
             name=os.environ["PARENT_NAME"], namespace=os.environ["NAMESPACE"]
         )
         cronjob_uid = cronjob.metadata.uid
@@ -238,7 +238,7 @@ def backup(bucket_name):
             ),
         )
         # wait until the job is created
-        batchAPI.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
+        batch_api.create_namespaced_job(namespace=os.environ["NAMESPACE"], body=job)
         time.sleep(2)
         page_num += 1
 
