@@ -53,7 +53,8 @@ def backup(bucket_name):
         ).items
 
         # list all running "backup" jobs
-        running_jobs = [job for job in jobs if job.status.active is not None]
+        # get the jobs by parent id
+        running_jobs = [job for job in jobs if job.status.active is not None and job.metadata.owner_references and job.metadata.owner_references[0].name == os.environ["PARENT_NAME"]
         print("running jobs: ")
         for j in running_jobs:
             print(j.metadata.name)
