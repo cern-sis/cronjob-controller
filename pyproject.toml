@@ -8,7 +8,7 @@ authors = ["Jimil Desai <jimildesai42@gmail.com>"]
 python = "^3.8"
 kopf = "^1.35.3"
 kubernetes = "^21.7.0"
-boto3 = "^1.26.107"
+boto3 = "^1.35.99"
 
 [tool.poetry.dev-dependencies]
 
