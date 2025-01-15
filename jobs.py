@@ -179,11 +179,11 @@ def backup(bucket_name):
                     value=os.environ["RCLONE_CONFIG_S3_ENDPOINT"],
                 ),
                 client.V1EnvVar(
-                    name="RCLONE_CONFIG_MEYRIN_ACCESS_KEY",
+                    name="RCLONE_CONFIG_MEYRIN_ACCESS_KEY_ID",
                     value=os.environ["INVENIO_S3_ACCESS_KEY"],
                 ),
                 client.V1EnvVar(
-                    name="RCLONE_CONFIG_MEYRIN_SECRET_KEY",
+                    name="RCLONE_CONFIG_MEYRIN_SECRET_ACCESS_KEY",
                     value=os.environ["INVENIO_S3_SECRET_KEY"],
                 ),
                 client.V1EnvVar(
