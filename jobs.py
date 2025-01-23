@@ -65,8 +65,10 @@ def backup(bucket_name):
             if job.status.succeeded is not None or job.status.failed is not None
         ]
 
-        # cleanup completed jobs and pods
+        # cleanup completed jobs and pods and configMaps
         for jobs in completed_jobs:
+            # cm and jobs have same name
+            cleanup_configmap(jobs.metadata.name)
             print(f"{jobs.metadata.name} is completed - deleting")
             label_selector = f"job-name={jobs.metadata.name}"
             try:
@@ -111,8 +113,8 @@ def backup(bucket_name):
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
             f.writelines([f"{name}\n" for name in object_names])
             file_path = f.name
-        config_map = f"backup-job-cfg-{bucket_name}-{page_num}"
-        cleanup_configmap(config_map)
+        config_map = f"backup-job-{bucket_name}-page-{page_num}"
+        #cleanup_configmap(config_map)
         config_map_data = {os.path.basename(file_path): open(file_path).read()}
         metadata = client.V1ObjectMeta(name=config_map)
         config_map = client.V1ConfigMap(data=config_map_data, metadata=metadata)
@@ -199,7 +201,7 @@ def backup(bucket_name):
         volume = client.V1Volume(
             name="files-volume",
             config_map=client.V1ConfigMapVolumeSource(
-                name=f"backup-job-cfg-{bucket_name}-{page_num}"
+                name=f"backup-job-{bucket_name}-page-{page_num}"
             ),
         )
 
