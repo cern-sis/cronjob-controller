@@ -31,12 +31,21 @@ def cleanup_configmap(config_map):
         if e.status == 404:
             return
 
+def parse_bucket(bucket_string: str):
+    """Split bucket entry into bucket_name and optional prefix."""
+    if "/" in bucket_string:
+        bucket_name, prefix = bucket_string.split("/", 1)
+        return bucket_name, prefix
+    return bucket_string, None
 
-def backup(bucket_name):
+def backup(bucket_name, prefix=None):
     # paginate over S3 Objects
     paginator = meyrin_s3.get_paginator("list_objects_v2")
+    paginate_args = {"Bucket": bucket_name, "PaginationConfig": {"PageSize": 1000}}
+    if prefix:
+        paginate_args["Prefix"] = prefix
     page_iterator = iter(
-        paginator.paginate(Bucket=bucket_name, PaginationConfig={"PageSize": 1000})
+        paginator.paginate(**paginate_args)
     )
 
     page_num = 0
@@ -49,9 +58,9 @@ def backup(bucket_name):
         # list all running "backup" jobs
         # get the jobs by parent id
         running_jobs = [job for job in jobs if job.status.active is not None and job.metadata.owner_references and job.metadata.owner_references[0].name == os.environ["PARENT_NAME"]]
-        print("running jobs: ")
-        for j in running_jobs:
-            print(j.metadata.name)
+        #print("running jobs: ")
+        # for j in running_jobs:
+        #     print(j.metadata.name)
         # list all completed jobs
         completed_jobs = [
             job
@@ -119,7 +128,7 @@ def backup(bucket_name):
         command = [
             "/bin/sh",
             "-c",
-            f"rclone --no-check-certificate copy meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
+            f"rclone copy meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
         ]
         if os.environ["DRY_RUN"] == "true":
             command = [
@@ -239,7 +248,7 @@ def backup(bucket_name):
         time.sleep(2)
         page_num += 1
 
-
 # backup all 16 buckets
 for bucket in s3_buckets:
-    backup(bucket)
+    bucket_name, prefix = parse_bucket(bucket)
+    backup(bucket_name, prefix)
