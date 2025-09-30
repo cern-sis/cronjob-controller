@@ -9,12 +9,9 @@ config.load_incluster_config()
 core_api = client.CoreV1Api()
 batch_api = client.BatchV1Api()
 
-# get buckets from the cronjob specs
 buckets = os.environ.get("BUCKET_LIST")
 s3_buckets = buckets.split(",")
-test_bucket = s3_buckets[0]
 
-# use aws client library to list buckets from meyrin site
 meyrin_s3 = boto3.client(
     "s3",
     aws_access_key_id=os.environ["INVENIO_S3_ACCESS_KEY"],
@@ -24,17 +21,14 @@ meyrin_s3 = boto3.client(
 
 
 def cleanup_configmap(config_map):
-    # print(f"cleaning up config map - {config_map}")
     try:
         core_api.delete_namespaced_config_map(
             name=config_map,
             namespace=os.environ["NAMESPACE"],
             body=client.V1DeleteOptions(),
         )
-        # print(f"{config_map} is deleted")
     except client.rest.ApiException as e:
         if e.status == 404:
-            print(f"{config_map} not found")
             return
 
 
@@ -125,7 +119,7 @@ def backup(bucket_name):
         command = [
             "/bin/sh",
             "-c",
-            f"rclone copy meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
+            f"rclone --no-check-certificate copy meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
         ]
         if os.environ["DRY_RUN"] == "true":
             command = [
