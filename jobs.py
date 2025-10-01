@@ -251,4 +251,5 @@ def backup(bucket_name, prefix=None):
 # backup all 16 buckets
 for bucket in s3_buckets:
     bucket_name, prefix = parse_bucket(bucket)
+    print(bucket_name)
     backup(bucket_name, prefix)
