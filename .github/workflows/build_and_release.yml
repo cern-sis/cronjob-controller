@@ -32,4 +32,4 @@ jobs:
           push: true
           tags: inspirehep/cronjob-controller:${{ github.sha }}
           cache-from: type=registry,ref=inspirehep/cronjob-controller:buildcache
-          cache-to: type=registry,ref=inspirehep/cronjob-controller:buildcache:mode=max
+          cache-to: type=registry,ref=inspirehep/cronjob-controller:buildcache,mode=max
