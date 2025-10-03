@@ -12,6 +12,9 @@ batch_api = client.BatchV1Api()
 buckets = os.environ.get("BUCKET_LIST")
 s3_buckets = buckets.split(",")
 
+sync_buckets = os.environ.get("SYNC_LIST")
+sync_buckets = [b.strip() for b in sync_buckets if b.strip()]
+
 meyrin_s3 = boto3.client(
     "s3",
     aws_access_key_id=os.environ["INVENIO_S3_ACCESS_KEY"],
@@ -125,16 +128,18 @@ def backup(bucket_name, prefix=None):
             namespace=os.environ["NAMESPACE"], body=config_map
         )
 
+        action = "sync" if bucket_name in sync_buckets else "copy"
+
         command = [
             "/bin/sh",
             "-c",
-            f"rclone copy meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
+            f"rclone {action} meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
         ]
         if os.environ["DRY_RUN"] == "true":
             command = [
                 "/bin/sh",
                 "-c",
-                f"rclone copy --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
+                f"rclone {action} --dry-run meyrin:{bucket_name} s3:{bucket_name} --files-from={file_path}",
             ]
         container = client.V1Container(
             name="backup-container",
