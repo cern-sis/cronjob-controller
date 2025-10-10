@@ -129,7 +129,9 @@ def backup(bucket_name, prefix=None):
         )
 
         action = "sync" if bucket_name in sync_buckets else "copy"
-
+        print("action: ", action)
+        print("bucket_name: ", bucket_name)
+        print("sync_buckets: ", sync_buckets)
         command = [
             "/bin/sh",
             "-c",
